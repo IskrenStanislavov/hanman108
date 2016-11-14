@@ -16,6 +16,12 @@ define(function(require){
         this.visibleBodyParts = 0;
         Stage.call(this, STAGE_INIT_DATA);
         this.resetVisualBodyParts();
+
+        var categoryChosen = categories[prompt("Please pick a category to play with: " + Object.keys(categories).join(', ') 
+            , Object.keys(categories)[Math.floor(Math.random() * Object.keys(categories).length)]
+        )];
+        this.wordPair = categoryChosen[Math.floor(Math.random() * categoryChosen.length)];
+
         this.textContainer = this.addChild(new PIXI.Container());
         this.wordVisual = this.textContainer.addChild(new PIXI.Text(
             "Here is the word",
@@ -28,9 +34,9 @@ define(function(require){
             {fontFamily : 'Verdana', fontSize: 24, fill : 0x001010, align : 'left', wordWrap: true, wordWrapWidth: 476 }
         ));
         this.descriptionVisual.position.set(149, 509);
-
-        this.word = "San Francisco";
-        this.description = "The cultural, commercial, and financial center of Northern California.";
+console.log(this.wordPair); 
+        this.word = this.wordPair.word;
+        this.description = this.wordPair.desc;
         this.showWordAndDescription();
 
     };

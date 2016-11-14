@@ -6,8 +6,8 @@ define(function(require){
             { word: "liverpool", desc:"A city and a football club in England"},
             { word: "swansea", desc:"It is a coastal city and county in Wales"},
             { word: "chelsea", desc:"A football team called after an area in southwest London"},
-            { word: "manchester-city", desc:"The club's most successful period was in the late 1960s and early 1970s"},
-            { word: "newcastle-united", desc:"They have a fierce local rivalry with Sunderland."},
+            { word: "manchester city", desc:"The club's most successful period was in the late 1960s and early 1970s"},
+            { word: "newcastle united", desc:"They have a fierce local rivalry with Sunderland."},
         ],
         movies: [
             { word:"alien", desc:"it is a 1979 British-American science fiction-horror film directed by Ridley Scott"},
