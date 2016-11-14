@@ -17,9 +17,12 @@ define(function(require){
         Stage.call(this, STAGE_INIT_DATA);
         this.resetVisualBodyParts();
 
-        var categoryChosen = categories[prompt("Please pick a category to play with: " + Object.keys(categories).join(', ') 
-            , Object.keys(categories)[Math.floor(Math.random() * Object.keys(categories).length)]
-        )];
+        var categoryChosen = categories[
+            prompt("Please pick a category to play with: " + Object.keys(categories).join(', ')
+                //randomize a choice for the user
+                , Object.keys(categories)[Math.floor(Math.random() * Object.keys(categories).length)]
+            )
+        ];
         this.wordPair = categoryChosen[Math.floor(Math.random() * categoryChosen.length)];
 
         this.textContainer = this.addChild(new PIXI.Container());
@@ -35,7 +38,8 @@ define(function(require){
         ));
         this.descriptionVisual.position.set(149, 509);
 console.log(this.wordPair); 
-        this.word = this.wordPair.word;
+        this.decodedWord = this.wordPair.word;
+        this.word = this.encode(this.decodedWord);
         this.description = this.wordPair.desc;
         this.showWordAndDescription();
 
@@ -59,6 +63,16 @@ console.log(this.wordPair);
                 object.visible = false;
             }
         });
+    };
+
+    Hangman.prototype.encode = function(word){
+        return word.split(' ').map(function(wordPiece){
+            var start = wordPiece[0];
+            var end = wordPiece[wordPiece.length-1];
+            return start + " _".repeat(wordPiece.length-2) + " " + end;
+        }).join(" ");
+        this.wordVisual.text = this.word;
+        this.descriptionVisual.text = this.description;
     };
 
     Hangman.prototype.showWordAndDescription = function(){
