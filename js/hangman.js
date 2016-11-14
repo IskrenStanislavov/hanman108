@@ -12,11 +12,13 @@ define(function(require){
     var Loader          = require("libs/loader");
 
     var Hangman = function(){
+        this.visibleBodyParts = 0;
         Stage.call(this, STAGE_INIT_DATA);
         this.resetVisualElements();
     };
     Hangman.prototype = Object.create(Stage.prototype);
     Hangman.prototype.resetVisualElements = function(){
+        // we can either keep them and hide them or remove them and create them on showing
         var arena = this;
         zIndexes.forEach(function(elementId, index){
             var object;
@@ -32,7 +34,21 @@ define(function(require){
                 object.visible = false;
             }
         });
+    };
 
+    Hangman.prototype.wrongWord = function(){
+        //total loss state
+        zIndexes.forEach(function(elementId, index){
+            this[elementId].visible = true;
+        }.bind(this));
+
+    };
+
+    Hangman.prototype.wrongLetter = function(){
+        if (this.visibleBodyParts < bodyPartsSequence.length){
+            this[bodyPartsSequence[this.visibleBodyParts]].visible = true;
+            this.visibleBodyParts++;
+        }
     };
 
     //CONFIG data
@@ -61,6 +77,9 @@ define(function(require){
         "legs"     : "images/legs.png",
     };
     var zIndexes = ["neck", "hanger", "head", "torso","hands","legs"];
+    var bodyPartsSequence = zIndexes.filter(function(elementId){
+        return elementId !== "hanger";
+    });//["neck", /*"hanger"*/, "head", "torso","hands","legs"];
     var positions = {
         "neck"  : new PIXI.Point(351, 240),
         "hanger": new PIXI.Point(53, 118),
