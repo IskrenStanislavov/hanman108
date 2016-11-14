@@ -12,20 +12,26 @@ define(function(require){
     var Loader          = require("libs/loader");
 
     var Hangman = function(){
-        var arena = this;
         Stage.call(this, STAGE_INIT_DATA);
+        this.resetVisualElements();
+    };
+    Hangman.prototype = Object.create(Stage.prototype);
+    Hangman.prototype.resetVisualElements = function(){
+        var arena = this;
         zIndexes.forEach(function(elementId, index){
-            var object = arena.addChild(PIXI.Sprite.fromFrame(resources[elementId]));
-            object.position = positions[elementId];
+            var object;
+            if (arena.hasOwnProperty(elementId)){
+                object = arena[elementId];
+            } else {
+                object = arena.addChild(PIXI.Sprite.fromFrame(resources[elementId]));
+                object.position = positions[elementId];
 
-            arena[elementId] = object;
+                arena[elementId] = object;
+            }
             if (elementId !== "hanger"){
                 object.visible = false;
             }
         });
-    };
-    Hangman.prototype = Object.create(Stage.prototype);
-    Hangman.prototype.initArena = function(){
 
     };
 
