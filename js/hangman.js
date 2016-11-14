@@ -14,10 +14,28 @@ define(function(require){
     var Hangman = function(){
         this.visibleBodyParts = 0;
         Stage.call(this, STAGE_INIT_DATA);
-        this.resetVisualElements();
+        this.resetVisualBodyParts();
+        this.textContainer = this.addChild(new PIXI.Container());
+        this.wordVisual = this.textContainer.addChild(new PIXI.Text(
+            "Here is the word",
+            {fontFamily : 'Verdana', fontSize: 24, fill : 0x010010, align : 'left', }
+        ));
+        this.wordVisual.anchor.set(0.5, 0);
+        this.wordVisual.position.set(351, 469);
+        this.descriptionVisual = this.textContainer.addChild(new PIXI.Text(
+            'This is the description',
+            {fontFamily : 'Verdana', fontSize: 24, fill : 0x001010, align : 'left', wordWrap: true, wordWrapWidth: 476 }
+        ));
+        this.descriptionVisual.position.set(149, 509);
+
+        this.word = "San Francisco";
+        this.description = "The cultural, commercial, and financial center of Northern California.";
+        this.showWordAndDescription();
+
     };
+
     Hangman.prototype = Object.create(Stage.prototype);
-    Hangman.prototype.resetVisualElements = function(){
+    Hangman.prototype.resetVisualBodyParts = function(){
         // we can either keep them and hide them or remove them and create them on showing
         var arena = this;
         zIndexes.forEach(function(elementId, index){
@@ -34,6 +52,11 @@ define(function(require){
                 object.visible = false;
             }
         });
+    };
+
+    Hangman.prototype.showWordAndDescription = function(){
+        this.wordVisual.text = this.word;
+        this.descriptionVisual.text = this.description;
     };
 
     Hangman.prototype.wrongWord = function(){
