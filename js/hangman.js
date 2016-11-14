@@ -11,7 +11,7 @@ define(function(require){
     var Stage           = require("../libs/stage");
     var Loader          = require("libs/loader");
 
-    var Arena = function(){
+    var Hangman = function(){
         var arena = this;
         Stage.call(this, STAGE_INIT_DATA);
         zIndexes.forEach(function(elementId, index){
@@ -24,8 +24,8 @@ define(function(require){
             }
         });
     };
-    Arena.prototype = Object.create(Stage.prototype);
-    Arena.prototype.initArena = function(){
+    Hangman.prototype = Object.create(Stage.prototype);
+    Hangman.prototype.initArena = function(){
 
     };
 
@@ -66,7 +66,7 @@ define(function(require){
     new Loader({
         resources: Object.values(resources),
         onComplete: function(){
-            window.arena = new Arena();
+            window.hangman = new Hangman();
         }
     });
 });
