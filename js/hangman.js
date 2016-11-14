@@ -10,6 +10,7 @@ define(function(require){
 
     var Stage           = require("../libs/stage");
     var Loader          = require("libs/loader");
+    var categories      = require("js/categories");
 
     var Hangman = function(){
         this.visibleBodyParts = 0;
@@ -111,6 +112,8 @@ define(function(require){
         "hands" : new PIXI.Point(236, 260),
         "legs"  : new PIXI.Point(285, 333),
     };
+    // data taken partly from https://codepen.io/cathydutton/pen/ldazc
+
     new Loader({
         resources: Object.values(resources),
         onComplete: function(){
