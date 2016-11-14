@@ -14,11 +14,14 @@ define(function(require){
     var Arena = function(){
         var arena = this;
         Stage.call(this, STAGE_INIT_DATA);
-        zIndexes.forEach(function(value, index){
-            var object = arena.addChild(PIXI.Sprite.fromFrame(resources[value]));
-            object.position = positions[value];
+        zIndexes.forEach(function(elementId, index){
+            var object = arena.addChild(PIXI.Sprite.fromFrame(resources[elementId]));
+            object.position = positions[elementId];
 
-            arena[value] = object;
+            arena[elementId] = object;
+            if (elementId !== "hanger"){
+                object.visible = false;
+            }
         });
     };
     Arena.prototype = Object.create(Stage.prototype);
