@@ -116,7 +116,7 @@ define(function(require){
 
                     this.setState(STATES.CATEGORY_SELECTION);
                 }.bind(this), 0);
-                break;
+            break;
             case STATES.CATEGORY_SELECTION:
                 this.categoryChosen = categories[
                     prompt("Please pick a category to play with: " + Object.keys(categories).join(', ')
@@ -136,17 +136,23 @@ define(function(require){
                         this.setState(STATES.GUESSING);
                     }.bind(this), 0);
                 }
-                break;
+            break;
             case STATES.GUESSING:
                 var guess = prompt("Enter a letter or guess the whole word", "");//empty field
                 if (guess.length == 1) {
                     var letter = guess[0];
                     if (this.decodedWord.indexOf(letter) >= 0){
-                        this.iterateStat("lettersGuessed");
-                        this.currentLetters.push(letter);
-                        this.showWordAndDescription();
+                        if (this.currentLetters.indexOf(letter)== -1){
+                            this.iterateStat("lettersGuessed");
+                            this.currentLetters.push(letter);
+                            this.showWordAndDescription();
+                        }
                         setTimeout(function(){
-                            this.setState(STATES.GUESSING);
+                            if (this.wordVisual.text.indexOf("_") == -1){
+                                this.setState(STATES.YOU_WIN);
+                            } else {
+                                this.setState(STATES.GUESSING);
+                            }
                         }.bind(this), 0);
                     } else {
                         this.wrongLetter();
@@ -176,10 +182,7 @@ define(function(require){
 
                     }
                 }
-
-            case STATES.WRONG_LETTER: break;
-            case STATES.CORRECT_LETTER: break;
-            
+            break;
             case STATES.YOU_WIN:
                 this.iterateStat("gamesWON");
                 if ("yes" === prompt("YOU WIN!\nDo you want to play again?", "yes").trim()){
@@ -192,13 +195,12 @@ define(function(require){
                     this.setState(STATES.INIT);
                 }
             break;
-
             case STATES.SHOW_STATS:
                 console.log(localStorage);
                 setTimeout(function(){
                     this.setState(STATES.GUESSING);
                 }.bind(this), 0);
-               break; 
+            break;
 
         }
     };
@@ -252,9 +254,6 @@ define(function(require){
         INIT: "init",
         CATEGORY_SELECTION: "category",
         GUESSING: "guessing",
-        // CHECKS: "checks",
-        WRONG_LETTER: "wrong_letter",
-        CORRECT_LETTER: "correct_letter",
         
         YOU_WIN: "you_win",
         GAME_OVER: "game_over",
