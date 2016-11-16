@@ -54,17 +54,28 @@ define(function(require){
 
     Hangman.prototype.encode = function(word){
         return word.split(' ').map(function(wordPiece){
-            var start = wordPiece[0];
-            var end = wordPiece[wordPiece.length-1];
-            return start + " _".repeat(wordPiece.length-2) + " " + end;
-        }).join(" ");
+            // var start = wordPiece[0];
+            // var end = wordPiece[wordPiece.length-1];
+            return wordPiece.split("").map(function(char, i){
+                if (i===0 ){
+                    return char; 
+                } else if (i == wordPiece.length-1){
+                    return " "+char; 
+                } else if (this.currentLetters.indexOf(char)!=-1){
+                    return " "+char; 
+                } else {
+                    return " _";
+                }
+            }.bind(this)).join("");
+            // return start + " _".repeat(wordPiece.length-2) + " " + end;
+        }.bind(this)).join(" ");
         this.wordVisual.text = this.word;
         this.descriptionVisual.text = this.description;
     };
 
     Hangman.prototype.showWordAndDescription = function(){
-        this.wordVisual.text = this.word;
-        this.descriptionVisual.text = this.description;
+        this.wordVisual.text = this.encode(this.decodedWord);
+        this.descriptionVisual.text = this.wordPair.desc;
     };
 
     Hangman.prototype.wrongWord = function(){
@@ -83,6 +94,7 @@ define(function(require){
     };
 
     Hangman.prototype.iterateStat = function(statName){
+        console.log(statName);
         localStorage.setItem(statName, (parseInt(localStorage.getItem(statName, 0)) || 0) + 1);
     };
 
@@ -93,6 +105,7 @@ define(function(require){
         //we might add a state-To-State check here
         switch(newState){
             case STATES.INIT:
+                this.currentLetters = [];
                 this.wordVisual.text = "";
                 this.descriptionVisual.text = "";
                 this.visibleBodyParts = 0;
@@ -117,8 +130,6 @@ define(function(require){
                     this.wordPair = this.categoryChosen[Math.floor(Math.random() * this.categoryChosen.length)];
                     console.log(this.wordPair); 
                     this.decodedWord = this.wordPair.word;
-                    this.word = this.encode(this.decodedWord);
-                    this.description = this.wordPair.desc;
                     this.showWordAndDescription();
 
                     setTimeout(function(){
@@ -127,27 +138,42 @@ define(function(require){
                 }
                 break;
             case STATES.GUESSING:
-                this.guess = prompt("Enter a letter or guess the whole word", "");//empty field
-                if (this.guess.length == 1) {
-                    var letter = this.guess[0];
+                var guess = prompt("Enter a letter or guess the whole word", "");//empty field
+                if (guess.length == 1) {
+                    var letter = guess[0];
                     if (this.decodedWord.indexOf(letter) >= 0){
                         this.iterateStat("lettersGuessed");
-
+                        this.currentLetters.push(letter);
+                        this.showWordAndDescription();
+                        setTimeout(function(){
+                            this.setState(STATES.GUESSING);
+                        }.bind(this), 0);
                     } else {
-
+                        this.wrongLetter();
+                        if (this.visibleBodyParts == bodyPartsSequence.length){
+                            setTimeout(function(){
+                                this.setState(STATES.GAME_OVER);
+                            }.bind(this), 0);
+                        } else {
+                            setTimeout(function(){
+                                this.setState(STATES.GUESSING);
+                            }.bind(this), 0);
+                        }
                     }
-                    // this.checkLetter();
-                } else if (this.guess  == "stats"){
+                } else if (guess  == "stats"){
                     this.setState(STATES.SHOW_STATS);
                 } else {//check the word
-                    if (this.guess.trim() === this.decodedWord){
-                        iterateStat("wordsGuessedAtOnce");
-                        this.setState(STATES.YOU_WIN);
-                        console.log(localStorage);
+                    if (guess.trim() === this.decodedWord){
+                        this.iterateStat("wordsGuessedAtOnce");
+                        setTimeout(function(){
+                            this.setState(STATES.YOU_WIN);
+                        }.bind(this), 0);
                     }else {
-                        // iterateStat("wrongWords");
-                        this.setState(STATES.GAME_OVER);
-                        console.log(localStorage);
+                        this.wrongWord();
+                        setTimeout(function(){
+                            this.setState(STATES.GAME_OVER);
+                        }.bind(this), 0);
+
                     }
                 }
 
@@ -155,13 +181,13 @@ define(function(require){
             case STATES.CORRECT_LETTER: break;
             
             case STATES.YOU_WIN:
-                iterateStat("gamesWON");
+                this.iterateStat("gamesWON");
                 if ("yes" === prompt("YOU WIN!\nDo you want to play again?", "yes").trim()){
                     this.setState(STATES.INIT);
                 }
             break;
             case STATES.GAME_OVER:
-                iterateStat("gamesLOST");
+                this.iterateStat("gamesLOST");
                 if ("yes" === prompt("YOU LOST!\nDo you want to play again?", "yes").trim()){
                     this.setState(STATES.INIT);
                 }
