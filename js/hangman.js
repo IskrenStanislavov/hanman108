@@ -82,6 +82,10 @@ define(function(require){
         }
     };
 
+    Hangman.prototype.iterateStat = function(statName){
+        localStorage.setItem(statName, (parseInt(localStorage.getItem(statName, 0)) || 0) + 1);
+    };
+
     Hangman.prototype.setState = function(newState){
         var oldState = this.state;
         this.state = newState;
@@ -124,17 +128,24 @@ define(function(require){
                 break;
             case STATES.GUESSING:
                 this.guess = prompt("Enter a letter or guess the whole word", "");//empty field
-                if (this.guess.length == 1){
-                    this.checkLetter(this.guess[0]);
+                if (this.guess.length == 1) {
+                    var letter = this.guess[0];
+                    if (this.decodedWord.indexOf(letter) >= 0){
+                        this.iterateStat("lettersGuessed");
+
+                    } else {
+
+                    }
+                    // this.checkLetter();
                 } else if (this.guess  == "stats"){
                     this.setState(STATES.SHOW_STATS);
                 } else {//check the word
                     if (this.guess.trim() === this.decodedWord){
-                        localStorage.setItem("wordsGuessedAtOnce", (parseInt(localStorage.getItem("wordsGuessedAtOnce", 0)) || 0) + 1);
+                        iterateStat("wordsGuessedAtOnce");
                         this.setState(STATES.YOU_WIN);
                         console.log(localStorage);
                     }else {
-                        // localStorage.setItem("wrongWords", (parseInt(localStorage.getItem("wrongWords", 0)) || 0) + 1);
+                        // iterateStat("wrongWords");
                         this.setState(STATES.GAME_OVER);
                         console.log(localStorage);
                     }
@@ -144,13 +155,13 @@ define(function(require){
             case STATES.CORRECT_LETTER: break;
             
             case STATES.YOU_WIN:
-                localStorage.setItem("gamesWON", (parseInt(localStorage.getItem("gamesWON", 0)) || 0) + 1);
+                iterateStat("gamesWON");
                 if ("yes" === prompt("YOU WIN!\nDo you want to play again?", "yes").trim()){
                     this.setState(STATES.INIT);
                 }
             break;
             case STATES.GAME_OVER:
-                localStorage.setItem("gamesLOST", (parseInt(localStorage.getItem("gamesLOST", 0)) || 0) + 1);
+                iterateStat("gamesLOST");
                 if ("yes" === prompt("YOU LOST!\nDo you want to play again?", "yes").trim()){
                     this.setState(STATES.INIT);
                 }
