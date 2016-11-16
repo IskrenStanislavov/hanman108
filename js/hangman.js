@@ -13,17 +13,9 @@ define(function(require){
     var categories      = require("js/categories");
 
     var Hangman = function(){
-        this.visibleBodyParts = 0;
         Stage.call(this, STAGE_INIT_DATA);
-        this.resetVisualBodyParts();
+        this.hangerContainer = this.addChild(new PIXI.Container());
 
-        var categoryChosen = categories[
-            prompt("Please pick a category to play with: " + Object.keys(categories).join(', ')
-                //randomize a choice for the user
-                , Object.keys(categories)[Math.floor(Math.random() * Object.keys(categories).length)]
-            )
-        ];
-        this.wordPair = categoryChosen[Math.floor(Math.random() * categoryChosen.length)];
 
         this.textContainer = this.addChild(new PIXI.Container());
         this.wordVisual = this.textContainer.addChild(new PIXI.Text(
@@ -37,12 +29,7 @@ define(function(require){
             {fontFamily : 'Verdana', fontSize: 24, fill : 0x001010, align : 'left', wordWrap: true, wordWrapWidth: 476 }
         ));
         this.descriptionVisual.position.set(149, 509);
-console.log(this.wordPair); 
-        this.decodedWord = this.wordPair.word;
-        this.word = this.encode(this.decodedWord);
-        this.description = this.wordPair.desc;
-        this.showWordAndDescription();
-
+        this.setState(STATES.INIT);
     };
 
     Hangman.prototype = Object.create(Stage.prototype);
@@ -54,7 +41,7 @@ console.log(this.wordPair);
             if (arena.hasOwnProperty(elementId)){
                 object = arena[elementId];
             } else {
-                object = arena.addChild(PIXI.Sprite.fromFrame(resources[elementId]));
+                object = arena.hangerContainer.addChild(PIXI.Sprite.fromFrame(resources[elementId]));
                 object.position = positions[elementId];
 
                 arena[elementId] = object;
@@ -92,6 +79,90 @@ console.log(this.wordPair);
         if (this.visibleBodyParts < bodyPartsSequence.length){
             this[bodyPartsSequence[this.visibleBodyParts]].visible = true;
             this.visibleBodyParts++;
+        }
+    };
+
+    Hangman.prototype.setState = function(newState){
+        var oldState = this.state;
+        this.state = newState;
+        console.log("state cahnged from-to:", oldState, newState);
+        //we might add a state-To-State check here
+        switch(newState){
+            case STATES.INIT:
+                this.wordVisual.text = "";
+                this.descriptionVisual.text = "";
+                this.visibleBodyParts = 0;
+                this.resetVisualBodyParts();
+                setTimeout(function(){
+                    // we need to call it on the next animationFrame
+                    // in order to view the hanger image
+
+                    this.setState(STATES.CATEGORY_SELECTION);
+                }.bind(this), 0);
+                break;
+            case STATES.CATEGORY_SELECTION:
+                this.categoryChosen = categories[
+                    prompt("Please pick a category to play with: " + Object.keys(categories).join(', ')
+                        //randomize a choice for the user
+                        , Object.keys(categories)[Math.floor(Math.random() * Object.keys(categories).length)]
+                    )
+                ];
+                if (!this.categoryChosen){//repeat if no such cathegory
+                    this.setState(STATES.CATEGORY_SELECTION);
+                } else {
+                    this.wordPair = this.categoryChosen[Math.floor(Math.random() * this.categoryChosen.length)];
+                    console.log(this.wordPair); 
+                    this.decodedWord = this.wordPair.word;
+                    this.word = this.encode(this.decodedWord);
+                    this.description = this.wordPair.desc;
+                    this.showWordAndDescription();
+
+                    setTimeout(function(){
+                        this.setState(STATES.GUESSING);
+                    }.bind(this), 0);
+                }
+                break;
+            case STATES.GUESSING:
+                this.guess = prompt("Enter a letter or guess the whole word", "");//empty field
+                if (this.guess.length == 1){
+                    this.checkLetter(this.guess[0]);
+                } else if (this.guess  == "stats"){
+                    this.setState(STATES.SHOW_STATS);
+                } else {//check the word
+                    if (this.guess.trim() === this.decodedWord){
+                        localStorage.setItem("wordsGuessedAtOnce", (parseInt(localStorage.getItem("wordsGuessedAtOnce", 0)) || 0) + 1);
+                        this.setState(STATES.YOU_WIN);
+                        console.log(localStorage);
+                    }else {
+                        // localStorage.setItem("wrongWords", (parseInt(localStorage.getItem("wrongWords", 0)) || 0) + 1);
+                        this.setState(STATES.GAME_OVER);
+                        console.log(localStorage);
+                    }
+                }
+
+            case STATES.WRONG_LETTER: break;
+            case STATES.CORRECT_LETTER: break;
+            
+            case STATES.YOU_WIN:
+                localStorage.setItem("gamesWON", (parseInt(localStorage.getItem("gamesWON", 0)) || 0) + 1);
+                if ("yes" === prompt("YOU WIN!\nDo you want to play again?", "yes").trim()){
+                    this.setState(STATES.INIT);
+                }
+            break;
+            case STATES.GAME_OVER:
+                localStorage.setItem("gamesLOST", (parseInt(localStorage.getItem("gamesLOST", 0)) || 0) + 1);
+                if ("yes" === prompt("YOU LOST!\nDo you want to play again?", "yes").trim()){
+                    this.setState(STATES.INIT);
+                }
+            break;
+
+            case STATES.SHOW_STATS:
+                console.log(localStorage);
+                setTimeout(function(){
+                    this.setState(STATES.GUESSING);
+                }.bind(this), 0);
+               break; 
+
         }
     };
 
@@ -140,4 +211,17 @@ console.log(this.wordPair);
             window.hangman = new Hangman();
         }
     });
+    var STATES = {
+        INIT: "init",
+        CATEGORY_SELECTION: "category",
+        GUESSING: "guessing",
+        // CHECKS: "checks",
+        WRONG_LETTER: "wrong_letter",
+        CORRECT_LETTER: "correct_letter",
+        
+        YOU_WIN: "you_win",
+        GAME_OVER: "game_over",
+
+        SHOW_STATS: "show_stats",
+    }
 });
